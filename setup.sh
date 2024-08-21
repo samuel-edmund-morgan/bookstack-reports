@@ -7,7 +7,7 @@ SOURCE_PATH="$(dirname -- "${BASH_SOURCE[0]}")"
 SOURCE_PATH="$(cd -- "$MY_PATH" && pwd)"
 
 apt update && apt upgrade
-apt install python3-venv python3-pip
+apt install python3-venv python3-pip python3.8-venv
 pip install -r "$SOURCE_PATH/requirements.txt"
 
 echo "Looking for Bookstack setup..."
@@ -73,7 +73,7 @@ mail_username = "$MAIL_USERNAME"
 mail_password = "$MAIL_PASSWORD"
 subject = f"Звіт з відвідувань платформи Bookstack {app_url}"
 body = "Сформований звіт відображає статистику відвідувань сторінок, книг та полиць платформи за 24 години"
-recipients = ["samuel.edmund.morgan@gmail.com"]
+recipients = ["$1"]
 report_path = f"/var/log/bookstack-reports/"
 sql_queries_file = "/etc/bookstack-reports/report_data.sql"
 EOF
