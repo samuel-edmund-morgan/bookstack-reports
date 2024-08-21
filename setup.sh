@@ -6,7 +6,7 @@ SERVICE_PATH='/etc/systemd/system/'
 SOURCE_PATH="$(dirname -- "${BASH_SOURCE[0]}")"
 SOURCE_PATH="$(cd -- "$MY_PATH" && pwd)"
 
-apt update && apt upgrade
+apt update && apt -y upgrade
 apt install python3-venv python3-pip python3.8-venv
 pip install -r "$SOURCE_PATH/requirements.txt"
 
