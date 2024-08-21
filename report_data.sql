@@ -12,5 +12,5 @@ LEFT JOIN books on books.id = views.viewable_id and views.viewable_type = 'book'
 LEFT JOIN pages on pages.id = views.viewable_id and views.viewable_type = 'page'
 LEFT JOIN chapters on chapters.id = views.viewable_id and views.viewable_type = 'chapter'
 LEFT JOIN bookshelves on bookshelves.id = views.viewable_id and views.viewable_type = 'bookshelf'
-WHERE views.updated_at > DATE_SUB(NOW(), INTERVAL 240 HOUR)
+WHERE views.updated_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
 ORDER BY views.updated_at DESC;
