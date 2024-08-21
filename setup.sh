@@ -1,15 +1,13 @@
 #!/bin/bash
 
 INSTALLATION_PATH='/etc/bookstack-reports/'
+LOG_PATH='/var/log/bookstack-reports/'
+SERVICE_PATH='/etc/systemd/system/'
+SOURCE_PATH="$(dirname -- "${BASH_SOURCE[0]}")"
+SOURCE_PATH="$(cd -- "$MY_PATH" && pwd)"
 
-
-#TMP till i create deb package then delete this
-mkdir /var/log/bookstack-reports/
-mkdir /etc/bookstack-reports/
-#s
-
-#till this
-
+apt install python3-venv python3-pip
+pip install -r "$SOURCE_PATH/requirements.txt"
 
 echo "Looking for Bookstack setup..."
 FULL_PATH=$(find  / -type d \( \
@@ -32,6 +30,7 @@ if [ -n "$FULL_PATH" ]
 then
     DIR_INST=$(dirname "$FULL_PATH")
     source "$DIR_INST"/.env
+
     if [ -z "$DB_HOST" ]\
      || [ -z "$DB_DATABASE" ]\
      || [ -z "$DB_USERNAME" ]\
@@ -41,12 +40,25 @@ then
      || [ -z "$MAIL_HOST" ]\
      || [ -z "$MAIL_PORT" ]\
      || [ -z "$MAIL_USERNAME" ]\
-     || [ -z "$MAIL_PASSWORD" ]
+     || [ -z "$MAIL_PASSWORD" ]\
+     || [ "$MAIL_FROM" == "null" ]\
+     || [ "$MAIL_HOST" == "null" ]\
+     || [ "$MAIL_PORT" == "null" ]\
+     || [ "$MAIL_USERNAME" == "null" ]\
+     || [ "$MAIL_PASSWORD" == "null" ]
     then
-      echo "Some variables are not specified"
+      echo "Some variables are null or not specified"
       exit 1
     fi
+
+    #TMP till i create deb package then delete this
+    mkdir "$LOG_PATH"
     mkdir "$INSTALLATION_PATH"
+    cp "$SOURCE_PATH/report_data.sql" "$INSTALLATION_PATH"
+    cp "$SOURCE_PATH/requirements.txt" "$INSTALLATION_PATH"
+    cp "$SOURCE_PATH/bookstack-report.py" "$INSTALLATION_PATH"
+
+    #till this
 cat <<EOF > "$INSTALLATION_PATH"envs.py
 db_host = "$DB_HOST"
 db_database = "$DB_DATABASE"
@@ -64,10 +76,44 @@ recipients = ["samuel.edmund.morgan@gmail.com"]
 report_path = f"/var/log/bookstack-reports/"
 sql_queries_file = "/etc/bookstack-reports/report_data.sql"
 EOF
-echo "Bookstack was found in "$DIR_INST""
-echo "Database and email settings have successfully been exported to "$INSTALLATION_PATH"envs.py"
+
+cat <<EOF > "$SERVICE_PATH"bookstack-reports.service
+[Unit]
+Description=Creates report
+Wants=bookstack-reports.timer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /etc/bookstack-reports/bookstack-report.py
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat <<EOF > "$SERVICE_PATH"bookstack-reports.timer
+[Unit]
+Description=Timer for bookstack reports
+Requires=bookstack-reports.service
+
+[Timer]
+Unit=bookstack-reports.service
+OnCalendar=*-*-* 08:00:00
+AccuracySec=1us
+
+[Install]
+WantedBy=timers.target
+EOF
+
+systemctl start bookstack-reports.service
+systemctl start bookstack-reports.timer
+systemctl enable bookstack-reports.service
+systemctl enable bookstack-reports.timer
+
+
+#echo "Bookstack was found in "$DIR_INST""
+#echo "Database and email settings have successfully been exported to "$INSTALLATION_PATH"envs.py"
 exit 0
 else
-   echo "Bookstack is not installed..."
+   echo "Bookstack is not found..."
    exit 1
 fi
