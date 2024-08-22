@@ -3,6 +3,10 @@
 
 1) Заповнити ВСІ необхідні поля(змінні) в файлі `.env` директорії інсталяції Bookstack (Наприклад: /var/www/bookstack/.env)
 ```bash
+sudo nano /var/www/bookstack/.env
+```
+
+```bash
 APP_KEY=base64:d54hfVzaVNDcdToyDfjff33GhT8oLC58L3NygnAs4/6C9Vht7Bs= #Вже заповнено за замовчуванням
 APP_URL=https://new.example.com #Вже заповнено за замовчуванням
 
